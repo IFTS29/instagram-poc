@@ -92,6 +92,37 @@ async function fetchInstagramFeed() {
   console.log(`  Límite pedido  : ${limit} posts`);
   console.log('===============================================================\n');
 
+  // 1. Verificación previa de conexión con la cuenta (/me)
+  try {
+    const profileUrl = `https://graph.instagram.com/me?fields=id,username,account_type&access_token=${token}`;
+    const profileRes = await fetch(profileUrl);
+    const profile = await profileRes.json();
+
+    if (!profileRes.ok || profile.error) {
+      console.error('[❌] Error de autenticación con la cuenta de Instagram:');
+      console.error(`     Código : ${profile.error?.code}`);
+      console.error(`     Mensaje: ${profile.error?.message}`);
+      if (profile.error?.code === 190) {
+        console.error('\n💡 TIP: El token ha expirado o es inválido. Genera uno nuevo en Meta for Developers o renuévalo con:');
+        console.error('        npm run refresh-token\n');
+      }
+      return;
+    }
+
+    console.log(`[👤] Cuenta conectada: @${profile.username} (ID: ${profile.id})`);
+    console.log(`[🏷️] Tipo de cuenta : ${profile.account_type || 'PROFESIONAL'}`);
+
+    if (profile.account_type === 'PERSONAL') {
+      console.warn('\n⚠️ ATENCIÓN: Esta cuenta figura como PERSONAL.');
+      console.warn('   Meta exige cuenta PROFESIONAL (Creador o Empresa) para consultar publicaciones.');
+      console.warn('   Cámbiala gratis desde la app de Instagram en tu celular:');
+      console.warn('   Configuración > Tipo de cuenta y herramientas > Cambiar a cuenta profesional.\n');
+    }
+  } catch (err) {
+    console.warn('[-] Advertencia al consultar /me:', err.message);
+  }
+
+  // 2. Consulta de publicaciones recientes (/me/media)
   const fields = 'id,caption,media_type,media_url,thumbnail_url,permalink,timestamp';
   const apiUrl = `https://graph.instagram.com/me/media?fields=${fields}&limit=${limit}&access_token=${token}`;
 
