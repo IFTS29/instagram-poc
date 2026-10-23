@@ -5,55 +5,48 @@
 
 ---
 
-## 🎯 Objetivo de este repositorio
-Validar de forma aislada y controlada la conexión con la **Instagram API with Instagram Login** (Graph API oficial de Meta), resolviendo:
-1. Conexión con cuenta profesional de Instagram y autenticación OAuth.
-2. Obtención del **Long-Lived Access Token** (60 días de vigencia).
-3. Consulta de publicaciones recientes vía `GET /me/media`.
-4. Filtrado selectivo por hashtag institucional (ej. `#IFTSEventos`).
-5. Descarga y persistencia de las imágenes binarias en `./images/` para evitar que los enlaces expiren a las 48-72 hs.
-6. Renovación automática periódica del token antes de su caducidad (`GET /refresh_access_token`).
+## 🎯 Regla de Negocio
+**Únicamente las publicaciones que contengan un hashtag van a la web.**
+* Si defines `INSTAGRAM_HASHTAG=#test`, solo pasan las publicaciones con ese hashtag.
+* Si dejas `INSTAGRAM_HASHTAG=` vacío, el filtro exige obligatoriamente la presencia de al menos un `#` en el texto. Cualquier post sin hashtag es descartado.
+* Soporte nativo para:
+  * **Imágenes (`IMAGE`)**: Descarga el archivo `.jpg`.
+  * **Videos (`VIDEO`)**: Descarga el video `.mp4` y su miniatura `_thumb.jpg`.
 
 ---
 
-## 🚀 Inicio Rápido
+## 🚀 Modos de Ejecución
 
-### 1. Requisitos
-* Node.js v18 o superior instalado (`node -v`).
-
-### 2. Configurar variables de entorno
-Copia el archivo de ejemplo y crea tu archivo `.env`:
+### 1. Modo Automático y con Botón Web (Recomendado)
+Inicia el servicio en segundo plano con panel web y endpoints HTTP:
 ```bash
-cp .env.example .env
-```
-Edita `.env` y pega tu `INSTAGRAM_ACCESS_TOKEN` obtenido en Meta for Developers.
-
-### 3. Ejecutar la sincronización
-```bash
-# Ejecutar con el script npm
 npm start
+```
+* **Panel interactivo con botón:** Abrir en el navegador [http://localhost:3000](http://localhost:3000).  
+  Contiene el botón **`[ 🔄 Sincronizar Ahora ]`** para refrescar el feed con un solo clic.
+* **Endpoint HTTP para botón o frontend externo:**  
+  Cualquier botón en la web o panel de administración puede disparar la sincronización llamando a:
+  ```http
+  POST http://localhost:3000/api/sync
+  ```
+* **Consulta de datos en JSON:**  
+  ```http
+  GET http://localhost:3000/api/feed
+  ```
+* **Ejecución periódica automática:**  
+  Configura `SYNC_INTERVAL_MINUTES=60` en tu archivo `.env` para que el servidor sincronice solo cada 60 minutos.
 
-# O directamente con Node (nativo con carga de .env)
-node --env-file=.env index.js
+---
+
+### 2. Modo CLI Directo (Una sola ejecución)
+Para ejecutar la sincronización una única vez por terminal sin levantar servidor:
+```bash
+npm run sync
 ```
 
-### 4. Probar la renovación del token de 60 días
+---
+
+### 3. Renovación del Token de 60 días
 ```bash
 npm run refresh-token
 ```
-
----
-
-## 📁 Estructura del Proyecto
-```
-instagram-poc/
-├── .env.example        # Plantilla de variables de entorno
-├── .gitignore          # Ignora imágenes descargadas y credenciales
-├── package.json        # Configuración del proyecto y scripts
-├── index.js            # Script principal de consulta, descarga y renovación
-├── images/             # Imágenes descargadas localmente (persistentes)
-└── data/
-    └── instagram-feed.json # Salida estructurada de publicaciones
-```
-
-Para el paso a paso detallado sobre cómo dar de alta la App en **Meta for Developers** y generar el token, consulta la guía técnica en la documentación del proyecto.

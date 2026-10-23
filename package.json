@@ -6,6 +6,7 @@
   "main": "index.js",
   "scripts": {
     "start": "node --env-file=.env index.js",
+    "sync": "node --env-file=.env index.js --sync-only",
     "refresh-token": "node --env-file=.env index.js --refresh"
   },
   "keywords": [
