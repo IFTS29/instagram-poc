@@ -18,6 +18,7 @@ import { createReadStream } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import http from 'node:http';
+import { CONFIG } from './config.js';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -95,16 +96,17 @@ async function downloadMediaFile(mediaUrl, filename) {
 // -----------------------------------------------------------------------------
 // Regla estricta de validación de hashtag
 // -----------------------------------------------------------------------------
-function matchesHashtagRule(caption, targetHashtag) {
+function matchesHashtagRule(caption) {
   const text = (caption || '').toLowerCase();
+  const configuredTags = (CONFIG.hashtags || []).map(t => t.trim().toLowerCase()).filter(Boolean);
 
-  // Si se configuró un hashtag específico en el .env (ej: #test o #IFTSEventos)
-  if (targetHashtag) {
-    return text.includes(targetHashtag);
+  // Si hay hashtags definidos en config.js, verifica si coincide con alguno de ellos
+  if (configuredTags.length > 0) {
+    return configuredTags.some(tag => text.includes(tag));
   }
 
   // REGLA DE NEGOCIO OBLIGATORIA:
-  // Si no se configuró un hashtag específico, SOLO pasan posts que contengan al menos un '#'
+  // Si la lista estuviera vacía, SOLO pasan posts que contengan al menos un '#'
   return /#[\p{L}\p{N}_]+/u.test(text) || text.includes('#');
 }
 
@@ -114,8 +116,8 @@ function matchesHashtagRule(caption, targetHashtag) {
 async function fetchInstagramFeed() {
   const token = process.env.INSTAGRAM_ACCESS_TOKEN;
   const accountId = process.env.INSTAGRAM_ACCOUNT_ID;
-  const targetHashtag = (process.env.INSTAGRAM_HASHTAG || '').trim().toLowerCase();
-  const limit = parseInt(process.env.INSTAGRAM_LIMIT || '12', 10);
+  const configuredTags = (CONFIG.hashtags || []).map(t => t.trim().toLowerCase()).filter(Boolean);
+  const limit = parseInt(CONFIG.limit || '12', 10);
 
   // Verificación de token
   if (!token || token === 'tu_token_de_larga_duracion_aqui') {
@@ -134,7 +136,7 @@ async function fetchInstagramFeed() {
   console.log('\n===============================================================');
   console.log('  SINCRONIZANDO CON INSTAGRAM GRAPH API (Meta Graph API v26.0)');
   console.log(`  Cuenta ID      : ${accountId}`);
-  console.log(`  Regla filtro   : ${targetHashtag ? `Hashtag específico "${targetHashtag}"` : 'Obligatorio: debe contener hashtag (#)'}`);
+  console.log(`  Regla filtro   : ${configuredTags.length > 0 ? `Hashtag(s) configurado(s): ${configuredTags.join(', ')}` : 'Obligatorio: debe contener hashtag (#)'}`);
   console.log(`  Límite pedido  : ${limit} posts`);
   console.log('===============================================================\n');
 
@@ -189,7 +191,7 @@ async function fetchInstagramFeed() {
         const caption = post.caption || '';
 
         // VALIDACIÓN ESTRICTA: ¿Cumple con la regla de negocio del hashtag?
-        if (!matchesHashtagRule(caption, targetHashtag)) {
+        if (!matchesHashtagRule(caption)) {
           console.log(`  ⏭️ Post ID ${post.id} DESCARTADO (no contiene el hashtag requerido)`);
           continue;
         }
@@ -468,8 +470,7 @@ function startHttpServer(port = 3000) {
 // -----------------------------------------------------------------------------
 const isRefreshCommand = process.argv.includes('--refresh');
 const isSyncOnlyCommand = process.argv.includes('--sync-only');
-const port = parseInt(process.env.PORT || '3000', 10);
-const syncIntervalMinutes = parseInt(process.env.SYNC_INTERVAL_MINUTES || '0', 10);
+const port = parseInt(process.env.PORT || CONFIG.port || '3000', 10);
 
 if (isRefreshCommand) {
   const token = process.env.INSTAGRAM_ACCESS_TOKEN;
@@ -489,12 +490,13 @@ if (isRefreshCommand) {
   // Iniciar servidor local para habilitar el botón y los endpoints
   startHttpServer(port);
 
-  // Iniciar temporizador si se configuró intervalo automático
-  if (syncIntervalMinutes > 0) {
-    console.log(`[⏱️] Sincronización automática activada: se ejecutará cada ${syncIntervalMinutes} minutos.`);
+  // Iniciar temporizador si está activado en config.js
+  if (CONFIG.autoSync?.enabled) {
+    const intervalMinutes = CONFIG.autoSync.intervalMinutes || 60;
+    console.log(`[⏱️] Sincronización automática activada cada ${intervalMinutes} minutos.`);
     setInterval(async () => {
       console.log(`\n[⏱️] Ejecutando sincronización periódica (${new Date().toLocaleTimeString()})...`);
       await fetchInstagramFeed();
-    }, syncIntervalMinutes * 60 * 1000);
+    }, intervalMinutes * 60 * 1000);
   }
 }

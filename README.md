@@ -5,48 +5,44 @@
 
 ---
 
-## 🎯 Regla de Negocio
-**Únicamente las publicaciones que contengan un hashtag van a la web.**
-* Si defines `INSTAGRAM_HASHTAG=#test`, solo pasan las publicaciones con ese hashtag.
-* Si dejas `INSTAGRAM_HASHTAG=` vacío, el filtro exige obligatoriamente la presencia de al menos un `#` en el texto. Cualquier post sin hashtag es descartado.
-* Soporte nativo para:
-  * **Imágenes (`IMAGE`)**: Descarga el archivo `.jpg`.
-  * **Videos (`VIDEO`)**: Descarga el video `.mp4` y su miniatura `_thumb.jpg`.
+## ⚙️ Configuración del Proyecto
+
+### 1. Variables Privadas y Secretos (`.env`)
+Copia la plantilla de secretos para crear tu archivo `.env`:
+```bash
+cp .env.example .env
+```
+Edita `.env` con las credenciales de Meta (este archivo **nunca** se sube a GitHub):
+* `INSTAGRAM_ACCESS_TOKEN`: Token de larga duración generado en Meta for Developers.
+* `INSTAGRAM_ACCOUNT_ID`: ID numérico de la cuenta comercial (`17841417122883500`).
+* `META_APP_ID` y `META_APP_SECRET`: Para renovación de tokens con `--refresh`.
+
+### 2. Configuración Pública de la Aplicación (`config.js`)
+Los parámetros de negocio se versionan en Git dentro de [config.js](file:///c:/Proyectos/IFTS29/instagram-poc/config.js):
+* `hashtags`: Lista de hashtags permitidos para mostrar en la web (ej: `['#test']` o `['#novedades', '#eventos']`).
+* `limit`: Cantidad máxima de publicaciones activas.
+* `port`: Puerto para el servidor local y panel web (`3000`).
+* `syncIntervalMinutes`: Intervalo de sincronización automática en minutos (0 = desactivado).
 
 ---
 
 ## 🚀 Modos de Ejecución
 
-### 1. Modo Automático y con Botón Web (Recomendado)
-Inicia el servicio en segundo plano con panel web y endpoints HTTP:
+### Modo Automático con Botón Web y API
+Inicia el servicio local con panel interactivo:
 ```bash
 npm start
 ```
-* **Panel interactivo con botón:** Abrir en el navegador [http://localhost:3000](http://localhost:3000).  
-  Contiene el botón **`[ 🔄 Sincronizar Ahora ]`** para refrescar el feed con un solo clic.
-* **Endpoint HTTP para botón o frontend externo:**  
-  Cualquier botón en la web o panel de administración puede disparar la sincronización llamando a:
-  ```http
-  POST http://localhost:3000/api/sync
-  ```
-* **Consulta de datos en JSON:**  
-  ```http
-  GET http://localhost:3000/api/feed
-  ```
-* **Ejecución periódica automática:**  
-  Configura `SYNC_INTERVAL_MINUTES=60` en tu archivo `.env` para que el servidor sincronice solo cada 60 minutos.
+* **Panel con botón:** Abre en el navegador [http://localhost:3000](http://localhost:3000).
+* **Endpoint de sincronización:** `POST http://localhost:3000/api/sync`
+* **Endpoint de datos:** `GET http://localhost:3000/api/feed`
 
----
-
-### 2. Modo CLI Directo (Una sola ejecución)
-Para ejecutar la sincronización una única vez por terminal sin levantar servidor:
+### Modo CLI Directo (Una sola ejecución)
 ```bash
 npm run sync
 ```
 
----
-
-### 3. Renovación del Token de 60 días
+### Renovación de Token
 ```bash
 npm run refresh-token
 ```
