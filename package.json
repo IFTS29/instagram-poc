@@ -1,20 +1,21 @@
 {
   "name": "instagram-poc",
   "version": "1.0.0",
-  "description": "PoC de integración con Instagram Graph API para el IFTS N.° 2",
+  "description": "PoC de integración con Instagram Graph API para el IFTS N.° 29",
   "type": "module",
   "main": "index.js",
   "scripts": {
     "start": "node --env-file=.env index.js",
     "sync": "node --env-file=.env index.js --sync-only",
-    "refresh-token": "node --env-file=.env index.js --refresh"
+    "refresh-token": "node --env-file=.env index.js --refresh",
+    "add-post": "node scripts/add-test-post.js"
   },
   "keywords": [
     "instagram",
     "graph-api",
     "meta",
     "poc",
-    "ifts2"
+    "ifts29"
   ],
   "author": "404-Solutions",
   "license": "MIT"
