@@ -151,10 +151,11 @@ export async function fetchInstagramFeed() {
           continue;
         }
 
-        // Validación de fecha (si el filtro está activado en config.js)
+        // Validación de fecha (ventana de búsqueda / lookback window)
         if (!matchesDateRule(post.timestamp)) {
-          console.log(`  ⏭️ Post ID ${post.id} DESCARTADO (supera el límite de antigüedad permitido)`);
-          continue;
+          console.log(`  🛑 Post ID ${post.id} fuera de la ventana de búsqueda (${post.timestamp}). Finalizando consulta a Meta.`);
+          nextUrl = null;
+          break;
         }
 
         if (post.media_type === 'VIDEO') {

@@ -25,14 +25,18 @@ export function matchesHashtagRule(caption, customConfig = CONFIG) {
  * configuradas en config.js, devuelve un array vacío [] y NO debe entrar a la web.
  */
 export function getPostCategories(caption, customConfig = CONFIG) {
-  const text = (caption || '').toLowerCase();
+  const postTags = new Set(extractHashtags(caption));
   const categories = customConfig.categories || {};
   const allowMulti = customConfig.allowMultiCategory !== false; // true por defecto
   const matched = [];
 
   for (const [catKey, catConfig] of Object.entries(categories)) {
-    const tags = (catConfig.hashtags || []).map(t => t.trim().toLowerCase());
-    if (tags.some(tag => text.includes(tag))) {
+    const targetTags = (catConfig.hashtags || []).map(t => {
+      const trimmed = t.trim().toLowerCase();
+      return trimmed.startsWith('#') ? trimmed : `#${trimmed}`;
+    });
+
+    if (targetTags.some(tag => postTags.has(tag))) {
       matched.push(catKey);
       if (!allowMulti) {
         break; // Toma solo la primera categoría encontrada
