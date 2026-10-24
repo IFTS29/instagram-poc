@@ -179,7 +179,7 @@ export function createServer(port = 3000) {
       }
     }
 
-    // 5. Portada Principal (Home IFTS N.° 2)
+    // 5. Portada Principal (Home IFTS N.° 29)
     if (url.pathname === '/') {
       const posts = await loadFeed();
       const html = renderHomePage(posts);

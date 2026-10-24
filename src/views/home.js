@@ -1,7 +1,7 @@
 /**
  * src/views/home.js
  * ============================================================================
- * Plantilla HTML institucional para la portada (Home) del IFTS N.° 2.
+ * Plantilla HTML institucional para la portada (Home) del IFTS N.° 29.
  * Genera los carruseles independientes, normalización visual y manejo de errores
  * de imágenes para que NUNCA se rompa el diseño aunque se borren fotos locales.
  *
@@ -10,6 +10,16 @@
 
 import { CONFIG } from '../../config.js';
 import { getPostCategories } from '../classifier.js';
+
+export function escapeHtml(str) {
+  if (str === null || str === undefined) return '';
+  return String(str)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/>/g, '&gt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
 
 export function renderHomePage(posts = []) {
   // Asegurar que cada publicación tenga categorías calculadas
@@ -40,8 +50,14 @@ export function renderHomePage(posts = []) {
       .replace(/#[\p{L}\p{N}_]+/gu, '')
       .trim();
 
+    const safeCaption = escapeHtml(cleanCaption || post.caption || 'Publicación institucional');
+    const safeFullCaption = escapeHtml(post.caption || '');
+    const safePermalink = (post.permalink && /^https?:\/\//i.test(post.permalink))
+      ? escapeHtml(post.permalink)
+      : 'https://www.instagram.com/';
+
     return `
-      <article class="feed-card" data-id="${post.id}">
+      <article class="feed-card" data-id="${escapeHtml(post.id)}">
         <div class="card-media">
           ${isVideo ? `
             <video controls poster="/${posterSource}" preload="metadata" playsinline onerror="this.poster='/images/placeholder.svg'">
@@ -53,17 +69,17 @@ export function renderHomePage(posts = []) {
             <img src="/${mediaSource}" alt="Publicación institucional" loading="lazy" onerror="this.onerror=null;this.src='/images/placeholder.svg';" />
             <span class="media-type-badge photo-badge">🖼️ FOTO</span>
           `}
-          <span class="date-badge">${dateFormatted}</span>
+          <span class="date-badge">${escapeHtml(dateFormatted)}</span>
         </div>
         <div class="card-body">
-          <p class="card-caption" title="${(post.caption || '').replace(/"/g, '&quot;')}">
-            ${cleanCaption || post.caption || 'Publicación institucional'}
+          <p class="card-caption" title="${safeFullCaption}">
+            ${safeCaption}
           </p>
           <div class="card-hashtags">
-            ${hashtagsFound.map(tag => `<span class="hashtag-tag">${tag}</span>`).join('')}
+            ${hashtagsFound.map(tag => `<span class="hashtag-tag">${escapeHtml(tag)}</span>`).join('')}
           </div>
           <div class="card-footer">
-            <a href="${post.permalink || 'https://www.instagram.com/'}" target="_blank" rel="noopener noreferrer" class="instagram-link">
+            <a href="${safePermalink}" target="_blank" rel="noopener noreferrer" class="instagram-link">
               <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <rect x="2" y="2" width="20" height="20" rx="5" ry="5"></rect>
                 <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
