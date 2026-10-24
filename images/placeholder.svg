@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 500" width="100%" height="100%">
+  <defs>
+    <linearGradient id="ph_bg" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#0f172a"/>
+    </linearGradient>
+  </defs>
+  <rect width="800" height="500" fill="url(#ph_bg)"/>
+  <g transform="translate(400, 210)" stroke="#64748b" stroke-width="4" stroke-linecap="round" stroke-linejoin="round" fill="none">
+    <rect x="-60" y="-45" width="120" height="90" rx="8"/>
+    <circle cx="-25" cy="-15" r="10" fill="#64748b"/>
+    <path d="M-55,30 L-15,-10 L25,30 M15,15 L35,-5 L55,20"/>
+  </g>
+  <text x="400" y="320" fill="#94a3b8" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="20" font-weight="700" text-anchor="middle">IFTS N.° 29 — Archivo Multimedia</text>
+  <text x="400" y="350" fill="#64748b" font-family="-apple-system, BlinkMacSystemFont, Segoe UI, Roboto, sans-serif" font-size="14" text-anchor="middle">Imagen o video en proceso de sincronización</text>
+</svg>

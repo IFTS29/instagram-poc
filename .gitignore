@@ -1,6 +1,8 @@
 node_modules/
 .env
-images/
+images/*
+!images/.gitkeep
+!images/placeholder.svg
 data/*.json
 !data/.gitkeep
 *.log

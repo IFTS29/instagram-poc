@@ -12,10 +12,32 @@
  *  - src/server.js     : Servidor HTTP nativo y endpoints.
  */
 
+import fs from 'node:fs';
 import { CONFIG } from './config.js';
 import { loadFeed } from './src/feed.js';
 import { fetchInstagramFeed, refreshLongLivedToken } from './src/meta.js';
 import { startHttpServer } from './src/server.js';
+
+// Carga condicional y segura de variables de entorno (.env) si el archivo existe
+try {
+  if (typeof process.loadEnvFile === 'function') {
+    process.loadEnvFile();
+  } else if (fs.existsSync('.env')) {
+    const envContent = fs.readFileSync('.env', 'utf-8');
+    for (const line of envContent.split(/\r?\n/)) {
+      const trimmed = line.trim();
+      if (!trimmed || trimmed.startsWith('#')) continue;
+      const idx = trimmed.indexOf('=');
+      if (idx !== -1) {
+        const key = trimmed.slice(0, idx).trim();
+        const val = trimmed.slice(idx + 1).trim().replace(/^["']|["']$/g, '');
+        if (!process.env[key]) process.env[key] = val;
+      }
+    }
+  }
+} catch {
+  // Ignorar si .env no existe (permite ejecución limpia en modo local/mock)
+}
 
 const isRefreshCommand = process.argv.includes('--refresh');
 const isSyncOnlyCommand = process.argv.includes('--sync-only');

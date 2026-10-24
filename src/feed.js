@@ -147,7 +147,8 @@ export function getMockFeedData() {
 }
 
 /**
- * Lee el feed persistido. Si no existe, lo regenera con el dataset inicial.
+ * Lee el feed persistido. Si no existe, devuelve un array vacío
+ * para renderizar limpiamente el estado inicial (Empty State).
  * Filtra automáticamente cualquier publicación que esté en la lista de exclusión.
  */
 export async function loadFeed() {
@@ -158,10 +159,7 @@ export async function loadFeed() {
     const deletedIds = await loadDeletedPostIds();
     return posts.filter(p => !deletedIds.includes(String(p.id)));
   } catch {
-    console.log('[*] Archivo data/instagram-feed.json no encontrado. Regenerando con datos de prueba...');
-    const initialData = getMockFeedData();
-    await saveFeed(initialData);
-    return initialData;
+    return [];
   }
 }
 
