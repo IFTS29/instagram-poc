@@ -108,7 +108,30 @@ export function createServer(port = 3000) {
       return;
     }
 
-    // 3. Endpoint para consultar el JSON del feed (GET /api/feed)
+    // 3. Endpoint para moderación: descartar/ocultar publicación (POST /api/discard-post o /api/delete-post)
+    if ((url.pathname === '/api/discard-post' || url.pathname === '/api/delete-post') && req.method === 'POST') {
+      let body = '';
+      req.on('data', chunk => { body += chunk; });
+      req.on('end', async () => {
+        try {
+          const { id } = JSON.parse(body || '{}');
+          if (!id) {
+            res.writeHead(400, { 'Content-Type': 'application/json' });
+            return res.end(JSON.stringify({ success: false, error: 'Falta el ID de la publicación a descartar' }));
+          }
+
+          const result = await deletePostById(id);
+          res.writeHead(200, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify(result));
+        } catch (err) {
+          res.writeHead(500, { 'Content-Type': 'application/json' });
+          return res.end(JSON.stringify({ success: false, error: err.message }));
+        }
+      });
+      return;
+    }
+
+    // 4. Endpoint para consultar el JSON del feed (GET /api/feed)
     if (url.pathname === '/api/feed') {
       try {
         const posts = await loadFeed();

@@ -97,6 +97,7 @@ export const CONFIG = {
 | `/api/feed?category=novedades` | `GET` | Filtra las publicaciones por categoría específica (`novedades` o `eventos`). |
 | `/api/feed?grouped=true` | `GET` | Devuelve las publicaciones agrupadas por categorías institucionales. |
 | `/api/test-post` | `POST` | Permite agregar una publicación de prueba con su caption y tipo de medio. |
+| `/api/discard-post` | `POST` | Descarta y archiva una publicación para que no se muestre ni vuelva a sincronizar. |
 
 ### 3. Variables Privadas y Secretos (`.env`)
 *(Solo necesario si querés consultar en vivo a los servidores de Meta)*:

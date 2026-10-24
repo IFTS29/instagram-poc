@@ -87,6 +87,9 @@ export function renderHomePage(posts = []) {
               </svg>
               Ver en Instagram ↗
             </a>
+            <button type="button" class="btn-discard" onclick="discardPost('${escapeHtml(post.id)}')" title="Ocultar y descartar de la web">
+              🗑️ Descartar
+            </button>
           </div>
         </div>
       </article>
@@ -489,6 +492,35 @@ export function renderHomePage(posts = []) {
         alert('Error: ' + err.message);
         btn.disabled = false;
         btn.textContent = 'Publicar y Ubicar';
+      }
+    }
+
+    async function discardPost(id) {
+      if (!confirm('¿Deseas descartar esta publicación? Se ocultará de la web y el sincronizador no volverá a incluirla en futuras consultas a Meta.')) {
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/discard-post', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ id })
+        });
+        const data = await res.json();
+        if (data.success) {
+          showToast('🗑️ Publicación descartada');
+          const cards = document.querySelectorAll('[data-id="' + id + '"]');
+          cards.forEach(c => {
+            c.style.transition = 'all 0.3s ease';
+            c.style.opacity = '0';
+            c.style.transform = 'scale(0.85)';
+          });
+          setTimeout(() => window.location.reload(), 500);
+        } else {
+          alert('Error al descartar: ' + (data.error || 'Error desconocido'));
+        }
+      } catch (err) {
+        alert('Error de red al descartar: ' + err.message);
       }
     }
 
